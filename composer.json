@@ -1,0 +1,7 @@
+{
+  "name": "drip/admin-panel",
+  "description": "DRIP key admin panel",
+  "require": {
+    "php": ">=8.0"
+  }
+}

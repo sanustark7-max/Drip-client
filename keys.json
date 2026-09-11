@@ -1,0 +1,15 @@
+{
+  "keys": {
+    "MalluClientTest": {
+      "active": true,
+      "days": 0,
+      "game": "freefire",
+      "hwid": null,
+      "note": "seed-key-local-copy",
+      "created": "2026-09-11T00:00:00Z",
+      "used": 0,
+      "loop": "MbeId00d",
+      "verml": "237958928"
+    }
+  }
+}

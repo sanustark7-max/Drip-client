@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DRIP Admin Panel</title>
+<style>
+:root{--bg:#0b0e14;--card:#121722;--line:#1e2636;--t:#e8edf7;--m:#8b95a8;--a:#ff6b2c;--g:#00e8a0;--r:#ff4d6d}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--t);min-height:100vh}
+body{background-image:radial-gradient(ellipse at 20% 0%,rgba(255,107,44,.12),transparent 50%)}
+.wrap{max-width:1000px;margin:0 auto;padding:24px 14px 50px}
+h1{font-size:1.2rem;margin-bottom:4px}
+.sub{color:var(--m);font-size:.8rem;margin-bottom:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.card h2{font-size:.85rem;margin-bottom:12px;color:var(--m);text-transform:uppercase;letter-spacing:.04em}
+label{display:block;font-size:.68rem;color:var(--m);margin-bottom:5px;font-weight:600}
+input,select{width:100%;background:#0a0d14;border:1px solid var(--line);border-radius:9px;padding:10px;color:var(--t);margin-bottom:10px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:640px){.row{grid-template-columns:1fr}}
+.btn{border:none;border-radius:9px;padding:11px 14px;font-weight:600;cursor:pointer;width:100%}
+.btn-a{background:linear-gradient(135deg,#ff6b2c,#ff3d00);color:#fff}
+.btn-g{background:rgba(0,232,160,.12);color:var(--g);border:1px solid rgba(0,232,160,.3)}
+.btn-r{background:rgba(255,77,109,.12);color:var(--r);border:1px solid rgba(255,77,109,.3)}
+.btn-x{background:transparent;border:1px solid var(--line);color:var(--m)}
+table{width:100%;border-collapse:collapse;font-size:.78rem}
+th{text-align:left;color:var(--m);font-size:.65rem;text-transform:uppercase;padding:8px 4px;border-bottom:1px solid var(--line)}
+td{padding:9px 4px;border-bottom:1px solid var(--line);vertical-align:middle}
+.mono{font-family:ui-monospace,monospace;color:var(--g);font-size:.75rem;word-break:break-all}
+.tag{display:inline-block;padding:2px 7px;border-radius:6px;font-size:.65rem;font-weight:600}
+.tag-on{background:rgba(0,232,160,.12);color:var(--g)}
+.tag-off{background:rgba(255,77,109,.12);color:var(--r)}
+.msg{font-size:.8rem;margin-top:8px;min-height:1.2em}
+.msg.ok{color:var(--g)}.msg.err{color:var(--r)}
+.login-box{max-width:360px;margin:80px auto}
+.note{background:rgba(77,171,247,.08);border:1px solid rgba(77,171,247,.25);border-radius:10px;padding:12px;font-size:.78rem;color:#a5d8ff;margin-bottom:14px;line-height:1.45}
+.hide{display:none}
+.actions{display:flex;gap:6px}
+.actions .btn{width:auto;padding:6px 10px;font-size:.72rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="loginView" class="login-box card">
+    <h1>DRIP Admin</h1>
+    <p class="sub">Key panel · official-style response</p>
+    <label>Admin password</label>
+    <input id="pass" type="password" value="dripadmin123" />
+    <button class="btn btn-a" id="btnLogin">Login</button>
+    <div class="msg" id="loginMsg"></div>
+  </div>
+
+  <div id="appView" class="hide">
+    <h1>DRIP Admin Panel</h1>
+    <p class="sub">Creates keys for <b>your</b> <code>l.php</code> · same JSON shape as FIXED APK server</p>
+
+    <div class="note">
+      <b>MalluClientTest</b> official server pe already PASS hai — FIXED APK me seedha use karo.<br>
+      Ye panel <b>apne server</b> (Termux / hosting) ke keys manage karta hai.<br>
+      Default admin pass: <code>dripadmin123</code> (api.php me change karo)
+    </div>
+
+    <div class="card">
+      <h2>Create key</h2>
+      <div class="row">
+        <div>
+          <label>Prefix</label>
+          <input id="prefix" value="DRIP" />
+        </div>
+        <div>
+          <label>Days (0 = lifetime)</label>
+          <select id="days">
+            <option value="1">1</option>
+            <option value="7" selected>7</option>
+            <option value="30">30</option>
+            <option value="90">90</option>
+            <option value="0">Lifetime</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Qty</label>
+          <input id="qty" type="number" value="1" min="1" max="50" />
+        </div>
+        <div>
+          <label>Game</label>
+          <input id="game" value="freefire" />
+        </div>
+      </div>
+      <label>Custom key (optional)</label>
+      <input id="custom" placeholder="MalluClientTest or leave empty for random" />
+      <label>Note</label>
+      <input id="note" placeholder="sale / test" />
+      <button class="btn btn-a" id="btnCreate">Generate & Save</button>
+      <div class="msg" id="createMsg"></div>
+      <div class="mono" id="lastKeys" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <h2>Keys <button class="btn btn-x" style="width:auto;display:inline;padding:4px 10px;margin-left:8px" id="btnRefresh">Refresh</button></h2>
+      <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>Key</th><th>Days</th><th>Game</th><th>Used</th><th>Status</th><th></th></tr></thead>
+          <tbody id="tbody"><tr><td colspan="6" style="color:var(--m)">—</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Server test</h2>
+      <label>Test key against local l.php</label>
+      <input id="testKey" value="MalluClientTest" />
+      <button class="btn btn-g" id="btnTest">POST /l.php</button>
+      <pre class="mono" id="testOut" style="margin-top:10px;white-space:pre-wrap"></pre>
+    </div>
+  </div>
+</div>
+<script>
+let TOKEN = localStorage.getItem('drip_admin_token') || '';
+const $ = id => document.getElementById(id);
+
+function showApp(v) {
+  $('loginView').classList.toggle('hide', v);
+  $('appView').classList.toggle('hide', !v);
+}
+
+async function api(action, body) {
+  const opts = {
+    method: body ? 'POST' : 'GET',
+    headers: { 'X-Admin-Token': TOKEN, 'Content-Type': 'application/json' }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch('api.php?action=' + action, opts);
+  return r.json();
+}
+
+$('btnLogin').onclick = async () => {
+  const password = $('pass').value;
+  const r = await fetch('api.php?action=login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'password=' + encodeURIComponent(password)
+  }).then(x => x.json());
+  if (r.ok) {
+    TOKEN = r.token;
+    localStorage.setItem('drip_admin_token', TOKEN);
+    showApp(true);
+    loadKeys();
+  } else {
+    $('loginMsg').className = 'msg err';
+    $('loginMsg').textContent = 'Wrong password';
+  }
+};
+
+if (TOKEN) { showApp(true); loadKeys(); }
+
+$('btnCreate').onclick = async () => {
+  try {
+    const r = await api('create', {
+      prefix: $('prefix').value,
+      days: parseInt($('days').value, 10),
+      qty: parseInt($('qty').value, 10),
+      game: $('game').value,
+      custom: $('custom').value.trim(),
+      note: $('note').value
+    });
+    if (!r.ok) throw new Error(r.error || 'fail');
+    $('createMsg').className = 'msg ok';
+    $('createMsg').textContent = 'Created ' + r.created.length + ' key(s)';
+    $('lastKeys').textContent = r.created.join('\n');
+    loadKeys();
+  } catch (e) {
+    $('createMsg').className = 'msg err';
+    $('createMsg').textContent = e.message;
+  }
+};
+
+async function loadKeys() {
+  try {
+    const r = await api('list');
+    const keys = r.keys || {};
+    const entries = Object.entries(keys).reverse();
+    if (!entries.length) {
+      $('tbody').innerHTML = '<tr><td colspan="6" style="color:#8b95a8">No keys</td></tr>';
+      return;
+    }
+    $('tbody').innerHTML = entries.map(([k, v]) => `
+      <tr>
+        <td class="mono">${k}</td>
+        <td>${v.days === 0 ? 'LT' : v.days}</td>
+        <td>${v.game || ''}</td>
+        <td>${v.used || 0}</td>
+        <td><span class="tag ${v.active ? 'tag-on' : 'tag-off'}">${v.active ? 'ON' : 'OFF'}</span></td>
+        <td class="actions">
+          <button class="btn btn-x" onclick="navigator.clipboard.writeText('${k}')">Copy</button>
+          <button class="btn btn-r" onclick="toggleKey('${k}', ${v.active ? 'false' : 'true'})">${v.active ? 'Off' : 'On'}</button>
+          <button class="btn btn-r" onclick="delKey('${k}')">Del</button>
+        </td>
+      </tr>`).join('');
+  } catch (e) {
+    $('tbody').innerHTML = `<tr><td colspan="6" class="msg err">${e.message}</td></tr>`;
+  }
+}
+
+async function toggleKey(key, active) {
+  await api('toggle', { key, active: active === true || active === 'true' });
+  loadKeys();
+}
+async function delKey(key) {
+  if (!confirm('Delete ' + key + '?')) return;
+  await api('delete', { key });
+  loadKeys();
+}
+$('btnRefresh').onclick = loadKeys;
+
+$('btnTest').onclick = async () => {
+  const key = $('testKey').value.trim();
+  const body = new URLSearchParams({ game: 'freefire', user_key: key, serial: 'admin-test' });
+  try {
+    const r = await fetch('l.php', { method: 'POST', body });
+    const t = await r.text();
+    $('testOut').textContent = t;
+  } catch (e) {
+    $('testOut').textContent = e.message;
+  }
+};
+</script>
+</body>
+</html>
